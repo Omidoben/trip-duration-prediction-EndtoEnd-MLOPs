@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYC Taxi Duration Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 40px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            display: none;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .result-header h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .prediction-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 15px 0;
+            border-left: 5px solid #667eea;
+        }
+
+        .prediction-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .prediction-value {
+            font-size: 2.5em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .prediction-unit {
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .summary {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .summary h3 {
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 1em;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            color: #666;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 5px solid #c62828;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            margin-top: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 6px;
+            color: #1565c0;
+            font-size: 0.95em;
+        }
+
+        .api-box {
+            background: #f3e5f5;
+            border-left: 4px solid #7b1fa2;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 6px;
+            color: #4a148c;
+            font-size: 0.95em;
+        }
+
+        .api-box h3 {
+            color: #7b1fa2;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .api-box code {
+            background: #fff9c4;
+            padding: 10px;
+            border-radius: 4px;
+            display: block;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .prediction-value {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚕 Taxi Duration</h1>
+            <p>Predict your NYC green taxi trip duration</p>
+        </div>
+
+        <div class="info-box">
+            ℹ️ Enter your trip details to get an estimated duration in minutes
+        </div>
+
+        <div class="api-box">
+            <h3>API Access</h3>
+            <p>This prediction service is also available via a REST API endpoint. Send a POST request to <code style="background: transparent; padding: 0; display: inline;">/predict</code> with JSON data.</p>
+            <code>{
+  "trips": [{
+    "PULocationID": "42",
+    "DOLocationID": "151",
+    "payment_type": "1",
+    "trip_distance": 3.5,
+    "passenger_count": 1,
+    "lpep_pickup_datetime": "2024-01-15 10:30:00"
+  }]
+}</code>
+        </div>
+
+        <form id="predictionForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="puLocation">Pickup Location ID</label>
+                    <input type="text" id="puLocation" placeholder="e.g., 42" required>
+                </div>
+                <div class="form-group">
+                    <label for="doLocation">Dropoff Location ID</label>
+                    <input type="text" id="doLocation" placeholder="e.g., 151" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="tripDistance">Trip Distance (miles)</label>
+                    <input type="number" id="tripDistance" placeholder="e.g., 3.5" step="0.1" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="passengerCount">Passenger Count</label>
+                    <input type="number" id="passengerCount" placeholder="e.g., 1" min="1" max="6" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="paymentType">Payment Type</label>
+                    <select id="paymentType" required>
+                        <option value="">Select payment type</option>
+                        <option value="1">Credit Card</option>
+                        <option value="2">Cash</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="pickupTime">Pickup Time</label>
+                    <input type="datetime-local" id="pickupTime" required>
+                </div>
+            </div>
+
+            <button type="submit" id="predictBtn">🔮 Predict Duration</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Making prediction...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="result" id="result">
+            <div class="result-header">
+                <h2>✨ Prediction Result</h2>
+            </div>
+            <div class="prediction-box">
+                <div class="prediction-label">Estimated Trip Duration</div>
+                <div class="prediction-value" id="durationValue">--</div>
+                <div class="prediction-unit">minutes</div>
+            </div>
+            <div class="summary">
+                <h3>Trip Summary</h3>
+                <div class="summary-item">
+                    <span>Distance:</span>
+                    <strong id="summaryDistance">--</strong>
+                </div>
+                <div class="summary-item">
+                    <span>Passengers:</span>
+                    <strong id="summaryPassengers">--</strong>
+                </div>
+                <div class="summary-item">
+                    <span>Pickup Time:</span>
+                    <strong id="summaryTime">--</strong>
+                </div>
+                <div class="summary-item">
+                    <span>Prediction Time:</span>
+                    <strong id="summaryPredictionTime">--</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin; // Use same origin (works on Render)
+
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const puLocation = document.getElementById('puLocation').value;
+            const doLocation = document.getElementById('doLocation').value;
+            const tripDistance = parseFloat(document.getElementById('tripDistance').value);
+            const passengerCount = parseInt(document.getElementById('passengerCount').value);
+            const paymentType = document.getElementById('paymentType').value;
+            const pickupTime = document.getElementById('pickupTime').value;
+
+            // Clear previous errors
+            document.getElementById('error').classList.remove('show');
+            document.getElementById('result').classList.remove('show');
+
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+
+            try {
+                // Convert local datetime to ISO format
+                const pickupDateTime = new Date(pickupTime).toISOString().replace('T', ' ').slice(0, 19);
+
+                const response = await fetch(`${API_URL}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        trips: [{
+                            PULocationID: puLocation,
+                            DOLocationID: doLocation,
+                            trip_distance: tripDistance,
+                            passenger_count: passengerCount,
+                            payment_type: paymentType,
+                            lpep_pickup_datetime: pickupDateTime
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+
+                document.getElementById('loading').classList.remove('show');
+
+                if (response.ok) {
+                    const prediction = data.predictions[0];
+                    
+                    document.getElementById('durationValue').textContent = 
+                        Math.round(prediction.predicted_duration_minutes * 10) / 10;
+                    document.getElementById('summaryDistance').textContent = 
+                        tripDistance + ' miles';
+                    document.getElementById('summaryPassengers').textContent = 
+                        passengerCount + ' passengers';
+                    document.getElementById('summaryTime').textContent = 
+                        new Date(pickupTime).toLocaleString();
+                    document.getElementById('summaryPredictionTime').textContent = 
+                        new Date().toLocaleTimeString();
+
+                    document.getElementById('result').classList.add('show');
+                } else {
+                    throw new Error(data.error || 'Prediction failed');
+                }
+            } catch (error) {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('error').textContent = 
+                    '❌ Error: ' + error.message;
+                document.getElementById('error').classList.add('show');
+            }
+        });
+
+        // Set default pickup time to now
+        document.getElementById('pickupTime').value = 
+            new Date().toISOString().slice(0, 16);
+    </script>
+</body>
+</html>
