@@ -1,0 +1,68 @@
+# NYC Taxi Duration Prediction - Configuration
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  train_file: "green_tripdata_2021-01.parquet"
+  val_file: "green_tripdata_2021-02.parquet"
+  test_file: "green_tripdata_2021-03.parquet"
+  min_duration: 1
+  max_duration: 60
+  min_distance: 1
+  max_distance: 50
+  categorical_features:
+    - PU_DO
+    - pickup_hour
+    - pickup_dayofweek
+    - payment_type
+  numerical_features:
+    - trip_distance
+    - passenger_count
+  target: duration
+
+mlflow:
+  tracking_uri: "sqlite:///mlflow.db"
+  experiment_name: "NYC_Taxi_Duration_Prediction"
+  artifact_location: "./mlartifacts"
+
+training:
+  random_state: 42
+  test_size: 0.2
+  cv_folds: 3
+  n_jobs: -1
+
+models:
+  linear_regression:
+    enabled: true
+    params: {}
+  
+  lasso:
+    enabled: true
+    baseline_params:
+      alpha: 0.001
+      max_iter: 1000
+    tuning:
+      method: "grid"
+      cv: 3
+      alpha_grid: [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0]
+  
+  ridge:
+    enabled: true
+    baseline_params:
+      alpha: 0.5
+    tuning:
+      method: "grid"
+      cv: 3
+      alpha_grid: [0.01, 0.1, 0.5, 1.0, 5.0, 10.0, 50.0]
+  
+  random_forest:
+    enabled: true
+    baseline_params:
+      n_estimators: 100
+      max_depth: 20
+      random_state: 42
+      n_jobs: -1
+    tuning:
+      method: "random"
+      cv: 3
+      n_iter: 20

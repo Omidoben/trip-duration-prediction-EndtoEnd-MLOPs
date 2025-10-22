@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+mlops/
+*.egg-info/
+# Jupyter Notebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+# IDEs
+.vscode/
+.idea/
+# Data files - DON'T COMMIT LARGE FILES!
+data/raw/
+data/processed/
+*.csv
+*.parquet
+*.xlsx
+# Model files - MLflow tracks these
+models/
+*.pkl
+*.bin
+*.h5
+*.joblib
+# MLflow artifacts
+#mlruns/
+mlartifacts/
+mlflow.db
+mlflow.db-shm
+mlflow.db-wal
+# Logs
+logs/
+*.log
+# Environment variables
+.env
+# OS files
+.DS_Store
+Thumbs.db
+# Temporary files
+*.tmp
+tmp/
