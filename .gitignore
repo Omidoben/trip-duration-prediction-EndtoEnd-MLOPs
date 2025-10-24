@@ -28,8 +28,8 @@ models/
 *.joblib
 # MLflow artifacts
 #mlruns/
-mlartifacts/
-mlflow.db
+#mlartifacts/
+#mlflow.db
 mlflow.db-shm
 mlflow.db-wal
 # Logs
