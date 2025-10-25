@@ -20,12 +20,6 @@ data/processed/
 *.csv
 *.parquet
 *.xlsx
-# Model files - MLflow tracks these
-models/
-*.pkl
-*.bin
-*.h5
-*.joblib
 # MLflow artifacts
 #mlruns/
 #mlartifacts/

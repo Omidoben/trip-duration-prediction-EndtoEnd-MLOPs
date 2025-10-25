@@ -5,7 +5,6 @@ import sys
 import os
 from pathlib import Path
 import pickle
-import json
 from datetime import datetime
 
 from flask import Flask, request, jsonify, render_template
@@ -26,16 +25,24 @@ def load_model_config():
     """
     global model, config
 
-    config = load_config("configs/config.yaml")
-    model_path = "models/ridge_baseline.pkl"
+    try:
+        config = load_config("configs/config.yaml")
+        model_path = "models/ridge_baseline.pkl"
 
-    if not Path(model_path).exists():
-        raise FileNotFoundError(f"Model not found at {model_path}")
+        if not Path(model_path).exists():
+            raise FileNotFoundError(f"Model not found at {model_path}")
+        
+        with open(model_path, "rb") as f_out:
+            model = pickle.load(f_out)
+        
+        print(f"Model loaded from {model_path}")
+        print("Config loaded")
     
-    with open(model_path, "rb") as f_out:
-        model = pickle.load(f_out)
-    print(f"Model loaded from {model_path}")
-    print("Config loaded")
+    except Exception as e:
+        print(f"Error during initialization: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
 
 
 @app.route("/", methods=["GET"])
@@ -77,6 +84,11 @@ def predict():
         df = pd.DataFrame(trips)
 
         # validate required columns
+        if config is None:
+            return jsonify({
+                "error": "Model not initialized"
+            }), 500
+        
         data_config = config["data"]
 
         required_cols = ["PULocationID", "DOLocationID", "payment_type", 
@@ -130,6 +142,9 @@ def predict():
         return jsonify(response), 200
     
     except Exception as e:
+        print(f"Prediction error: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             "error": str(e)
         }), 500
@@ -137,6 +152,11 @@ def predict():
 @app.route("/info", methods=["GET"])
 def model_info():
     """Get model information"""
+    if config is None:
+        return jsonify({
+            "error": "Model not initialized"
+        }), 500
+    
     return jsonify({
         "model_type": "Ridge Regression",
         "model_file": "ridge_baseline.pkl",

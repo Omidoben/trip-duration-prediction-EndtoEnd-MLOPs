@@ -1,0 +1,22 @@
+artifact_path: /home/omido/nyc-taxi-duration/mlruns/1/models/m-202933e2c0cc43ca851ee4045bc4c652/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.10.18
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.7.2
+mlflow_version: 3.4.0
+model_id: m-202933e2c0cc43ca851ee4045bc4c652
+model_size_bytes: 224452
+model_uuid: m-202933e2c0cc43ca851ee4045bc4c652
+prompts: null
+run_id: 05031a944d9949cdae62be6a5c8da090
+utc_time_created: '2025-10-23 21:39:45.677253'
