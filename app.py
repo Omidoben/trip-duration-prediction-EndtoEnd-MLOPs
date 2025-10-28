@@ -19,6 +19,10 @@ app = Flask(__name__)
 model = None
 config = None
 
+# Base directory (important fix for Render)
+BASE_DIR = Path(__file__).resolve().parent
+
+
 def load_model_config():
     """
     Load model and config
@@ -26,18 +30,29 @@ def load_model_config():
     global model, config
 
     try:
-        config = load_config("configs/config.yaml")
-        model_path = "models/ridge_baseline.pkl"
+        config_path = BASE_DIR / "configs" / "config.yaml"
+        model_path = BASE_DIR / "models" / "ridge_baseline.pkl"
 
-        if not Path(model_path).exists():
+        print(f"Looking for config at: {config_path}")
+        print(f"Looking for model at: {model_path}")
+
+        if not config_path.exists():
+            raise FileNotFoundError(f"Config not found at {config_path}")
+        if not model_path.exists():
             raise FileNotFoundError(f"Model not found at {model_path}")
-        
+
+        config = load_config(config_path)
+        print("Config loaded successfully")
+
         with open(model_path, "rb") as f_out:
             model = pickle.load(f_out)
-        
+
         print(f"Model loaded from {model_path}")
-        print("Config loaded")
-    
+        print("Model and config initialized")
+
+        print("Current working directory:", os.getcwd())
+        print("Files in BASE_DIR:", os.listdir(BASE_DIR))
+
     except Exception as e:
         print(f"Error during initialization: {e}")
         import traceback
@@ -72,54 +87,53 @@ def predict():
             return jsonify({
                 "error": "Invalid input. Expected json with 'trips' key"
             }), 400
-        
+
         trips = data["trips"]
 
-        if not isinstance(trips, list) or len(trips)==0:
+        if not isinstance(trips, list) or len(trips) == 0:
             return jsonify({
                 "error": "Trips must be a non empty list"
             }), 400
-        
+
         # convert to dataframe
         df = pd.DataFrame(trips)
 
         # validate required columns
-        if config is None:
+        if config is None or model is None:
             return jsonify({
                 "error": "Model not initialized"
             }), 500
-        
+
         data_config = config["data"]
 
-        required_cols = ["PULocationID", "DOLocationID", "payment_type", 
-                        "trip_distance", "passenger_count", "lpep_pickup_datetime"]
-        
+        required_cols = [
+            "PULocationID", "DOLocationID", "payment_type",
+            "trip_distance", "passenger_count", "lpep_pickup_datetime"
+        ]
+
         missing = [col for col in required_cols if col not in df.columns]
         if missing:
             return jsonify({
                 "error": f"Missing required columns: {missing}"
             }), 400
-        
+
         # Prepare features
         categorical_cols = ["PULocationID", "DOLocationID", "payment_type"]
         df[categorical_cols] = df[categorical_cols].astype(str)
         df["PU_DO"] = df["PULocationID"] + '_' + df["DOLocationID"]
-        
+
         df["lpep_pickup_datetime"] = pd.to_datetime(df["lpep_pickup_datetime"])
         df["pickup_hour"] = df["lpep_pickup_datetime"].dt.hour
         df["pickup_dayofweek"] = df["lpep_pickup_datetime"].dt.dayofweek
-        
-        # Select features
+
         feature_cols = (
-            data_config["categorical_features"] + 
+            data_config["categorical_features"] +
             data_config["numerical_features"]
         )
         X = df[feature_cols].copy()
 
-        # Make predictions
         predictions = model.predict(X)
 
-        # Format response
         response = {
             "predictions": [
                 {
@@ -138,9 +152,9 @@ def predict():
                 "timestamp": datetime.now().isoformat()
             }
         }
-        
+
         return jsonify(response), 200
-    
+
     except Exception as e:
         print(f"Prediction error: {e}")
         import traceback
@@ -149,6 +163,7 @@ def predict():
             "error": str(e)
         }), 500
 
+
 @app.route("/info", methods=["GET"])
 def model_info():
     """Get model information"""
@@ -156,7 +171,7 @@ def model_info():
         return jsonify({
             "error": "Model not initialized"
         }), 500
-    
+
     return jsonify({
         "model_type": "Ridge Regression",
         "model_file": "ridge_baseline.pkl",
@@ -167,6 +182,8 @@ def model_info():
         "description": "Predicts NYC taxi trip duration in minutes"
     }), 200
 
-if __name__=="__main__":
-    load_model_config()
+
+load_model_config()
+
+if __name__ == "__main__":
     app.run(debug=False, host='0.0.0.0', port=int(os.getenv('PORT', 8000)))
