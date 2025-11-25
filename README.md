@@ -1,13 +1,13 @@
-# 🚕 NYC Taxi Trip Duration Prediction (MLOps Project)
+# NYC Taxi Trip Duration Prediction (MLOps Project)
 
 A full end-to-end **MLOps project** to predict NYC taxi trip durations using machine learning.  
 It includes data ingestion, preprocessing, model training, experiment tracking, and web deployment.
 
-🔗 **Live Demo:** [https://trip-duration-prediction.onrender.com](https://trip-duration-prediction.onrender.com)
+ **Live Demo:** [https://trip-duration-prediction.onrender.com](https://trip-duration-prediction.onrender.com)
 
 ---
 
-## 📊 Project Overview
+##  Project Overview
 The goal of this project is to predict taxi trip duration (in minutes) based on:
 - Pickup and dropoff locations  
 - Trip distance  
@@ -18,7 +18,7 @@ The solution demonstrates **MLOps best practices**, from data preparation to pro
 
 ---
 
-## ⚙️ Tech Stack
+## Tech Stack
 | Category | Tools |
 |-----------|--------|
 | Language | Python 3.10 |
@@ -29,7 +29,7 @@ The solution demonstrates **MLOps best practices**, from data preparation to pro
 
 ---
 
-## 🧠 Model Training Workflow
+## Model Training Workflow
 1. **Exploration** → `notebooks/`  
    Data exploration and feature engineering.  
 2. **Development** → `src/`  
@@ -41,9 +41,9 @@ The solution demonstrates **MLOps best practices**, from data preparation to pro
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-### 1️⃣ Setup Environment
+### Setup Environment
 ```bash
 # Create virtual environment
 conda create -n mlops python=3.10
@@ -75,13 +75,13 @@ View Experiments
     mlflow ui
     Open browser: http://localhost:5000
 
-📈 Models
+Models
 Linear Regression (baseline)
 Lasso Regression (L1 regularization)
 Ridge Regression (L2 regularization)
 Random Forest (ensemble)
 
-🎯 Features
+Features
 Categorical:
 
 PU_DO (pickup-dropoff combination)
@@ -95,10 +95,10 @@ passenger_count
 
 
 
-🤝 Contributing
+Contributing
 This is a learning project following MLOps best practices.
 
-📚 Resources
+Resources
 MLOps Zoomcamp
 MLflow Documentation
 
